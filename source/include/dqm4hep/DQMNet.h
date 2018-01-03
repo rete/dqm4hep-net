@@ -104,7 +104,7 @@ namespace dqm4hep {
       ///< Constructor
       BufferModelT() { m_value.assign(NullBuffer::buffer, NullBuffer::size); m_rawBuffer.adopt(m_value.c_str(), m_value.size()); }
       ///< Copy the value for further use
-      void copy(const std::string &value) { m_value = value; m_rawBuffer.adopt(m_value.c_str(), m_value.size()); }
+      void copy(const std::string &value) { m_value.assign(value.c_str(), value.size()); m_rawBuffer.adopt(m_value.c_str(), m_value.size()); }
       ///< Move the value for further use
       void move(std::string &&value) { m_value = std::move(value); m_rawBuffer.adopt(m_value.c_str(), m_value.size()); }
     private:
