@@ -39,7 +39,7 @@ int main(int argc, char **argv) {
   std::string serverName(argv[1]);
 
   Client client;
-  json serverInfo;
+  json serverInfo({});
   client.queryServerInfo(serverName, serverInfo);
   std::cout << serverInfo.dump(2) << std::endl;
 
