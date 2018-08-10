@@ -40,6 +40,194 @@
 namespace dqm4hep {
 
   namespace net {
+    
+#ifdef true
+
+    namespace experimental {
+      
+      class Server;
+      
+      class NameServerData {
+      public:
+        /// The data buffer to handle
+        Buffer            m_data = {};
+        /// The service name (command, request or service)
+        std::string       m_name = {""};
+        /// The client id
+        int               m_clientId = {0}; 
+      };
+      
+      class NameServer {
+        class Service;
+        class Command;
+        class Rpc;
+      public:
+        inline NameServer(Server *srv) :
+          m_server(srv) {
+          /* nop */
+        }
+        
+        inline ~NameServer() {
+          
+        }
+        
+        NameServer(const NameServer&) = delete;
+        NameServer() = delete;
+        NameServer& operator=(const NameServer&) = delete;
+        
+        inline const std::string& name() const {
+          return m_name;
+        }
+        
+        inline void setName(const std::string &sname) {
+          if(running()) {
+            dqm_error("NameServer::setName: Already running, can't set server name !");
+            throw core::StatusCodeException(core::STATUS_CODE_NOT_ALLOWED);
+          }
+          m_name = sname;
+        }
+        
+        inline void start() {
+          if(running()) {
+            return;
+          }
+          // TODO start server impl
+          m_running = true;
+        }
+        
+        inline void stop() {
+          if(not running()) {
+            return;
+          }
+          // TODO start server impl
+          m_running = false;
+        }
+        
+        inline bool running() const {
+          return m_running;
+        }
+        
+        // SVC
+        inline void createService(const std::string &svcName) {
+          if(serviceExists()) {
+            dqm_error("NameServer::createService: Service '{0}' already exists", svcName);
+            throw core::StatusCodeException(core::STATUS_CODE_ALREADY_PRESENT);
+          }
+          // TODO create service impl
+        }
+        
+        inline void removeService(const std::string &svcName) {
+          if(not serviceExists()) {
+            return;
+          }
+          // TODO remove service impl
+        }
+        
+        inline bool serviceExists(const std::string &svcName) const {
+          return true; // TODO impl
+        }
+        
+        template <typename T>
+        inline void updateService(const std::string &svcName, int clientId, const T& data) {
+          NameServerData sdata;
+          sdata.m_client = clientId;
+          sdata.m_name = svcName;
+          auto model = sdata.m_data.createModel();
+          model.copy(data);
+          sdata.m_data.setModel(model);
+          // do it
+          updateService(sdata);
+        }
+        
+        template <typename T>
+        inline void updateService(const std::string &svcName, int clientId, const T *const array, std::size_t size) {
+          NameServerData sdata;
+          sdata.m_client = clientId;
+          sdata.m_name = svcName;
+          auto model = sdata.m_data.createModel();
+          model.adopt(array, size*sizeof(T));
+          sdata.m_data.setModel(model);
+          // do it
+          updateService(sdata);
+        }
+        
+        template <typename T>
+        inline void updateService(const std::string &svcName, const T& data) const {
+          NameServerData sdata;
+          sdata.m_client = 0;
+          sdata.m_name = svcName;
+          auto model = sdata.m_data.createModel();
+          model.copy(data);
+          sdata.m_data.setModel(model);
+          // do it
+          updateService(sdata);
+        }
+        
+        template <typename T>
+        inline void updateService(const std::string &svcName, const T *const array, std::size_t size) const {
+          NameServerData sdata;
+          sdata.m_client = 0;
+          sdata.m_name = svcName;
+          auto model = sdata.m_data.createModel();
+          model.adopt(array, size*sizeof(T));
+          sdata.m_data.setModel(model);
+          // do it
+          updateService(sdata);
+        }
+        
+        // RPC
+        template <typename T>
+        void onRequest(const std::string &name, T *obj, void(T::*func)(const NameServerData &data, Buffer &response));
+        
+        // CMD
+        template <typename T>
+        void onCommand(const std::string &name, T *obj, void(T::*func)(const NameServerData &data));
+        
+        template <typename T>
+        void onClientExit(T *obj, void(T::*func)(int clientId));
+        
+        template <typename T>
+        void cleanup(T *obj);
+        
+      private:
+        void updateService(const NameServerData &/*data*/) {
+          
+        }
+        
+      private:
+        Server*                   m_server = {nullptr};
+        std::string               m_name = {"main"};
+        bool                      m_running = {false};
+      };
+      
+      class Server {
+
+      public:
+        Server();
+        ~Server();
+        Server& operator=(const Server&) = delete;
+        Server(const Server&) = delete;
+        
+        // name server stuff
+        void enableNameServer();
+        void disableNameServer();
+        bool nameServerEnabled() const;
+        const NameServer* nameServer() const;
+        NameServer* nameServer();
+
+        
+        // websocket stuff
+        void enableWebsocketServer();
+        void disableWebsocketServer();
+        void setPort(int port);
+        int port() const;
+        
+        
+        
+      };
+      
+    }
+#endif
 
     /**
      * Server class
